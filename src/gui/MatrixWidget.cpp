@@ -402,12 +402,12 @@ void MatrixWidget::paintEvent(QPaintEvent* event)
 
         pixpainter->setPen(Qt::black);
 
-        for (const auto &p: txtToPrint) {
+        /*for (const auto &p: txtToPrint) {
             for (int i = startLineY; i <= endLineY; i++) {
                 int startLine = yPosOfLine(i);
-                int isWhiteKey = 0;
+                QString isWhiteKey = "";
                 QString my_sym;
-                int note_id = 127-i;
+                int note_id = 127-i+12;
                 while (note_id >= 72 || note_id < 60) {
                     if (note_id < 60) {
                         my_sym = '-' + my_sym;
@@ -418,20 +418,28 @@ void MatrixWidget::paintEvent(QPaintEvent* event)
                     }
                 }
                 switch (note_id-60) {
-                    case 0: isWhiteKey = 1; break;
-                    case 2: isWhiteKey = 2; break;
-                    case 4: isWhiteKey = 3; break;
-                    case 5: isWhiteKey = 4; break;
-                    case 7: isWhiteKey = 5; break;
-                    case 9: isWhiteKey = 6; break;
-                    case 11: isWhiteKey = 7; break;
+                    case 0: isWhiteKey = "1"; break;
+                    //case 1: isWhiteKey = "1#"; break;
+                    case 2: isWhiteKey = "2"; break;
+                    //case 3: isWhiteKey = "2#"; break;
+
+                    case 4: isWhiteKey = "3"; break;
+                    case 5: isWhiteKey = "4"; break;
+                    //case 5: isWhiteKey = "3"; break;
+                    //case 6: isWhiteKey = "4#"; break;
+
+                    case 7: isWhiteKey = "5"; break;
+                    //case 8: isWhiteKey = "5#"; break;
+                    case 9: isWhiteKey = "6"; break;
+                    //case 10: isWhiteKey = "6#"; break;
+                    case 11: isWhiteKey = "7"; break;
                 }
-                my_sym += QString::number(isWhiteKey);
-                if (isWhiteKey)
+                my_sym += isWhiteKey;
+                if (isWhiteKey.length())
                     pixpainter->drawText(p, startLine + lineHeight() / 2 + 4, my_sym);
             }
 
-        }
+        }*/
 
         delete pixpainter;
     }
@@ -622,6 +630,9 @@ void MatrixWidget::paintChannel(QPainter* painter, int channel)
 
             event->setX(x);
             event->setY(y);
+            double metronomeDiv = 4 / (double)qPow(2, _div);
+            int ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
+            width = timeMsOfWidth(msOfTick(ticksPerDiv)/8/12);
             event->setWidth(width);
             event->setHeight(height);
 

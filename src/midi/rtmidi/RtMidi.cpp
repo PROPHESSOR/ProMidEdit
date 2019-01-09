@@ -2092,16 +2092,16 @@ void MidiInWinMM :: openPort( unsigned int portNumber, const std::string /*portN
   }
 
   WinMidiData *data = static_cast<WinMidiData *> (apiData_);
-  MMRESULT result = midiInOpen( &data->inHandle,
+  MMRESULT result;/* = midiInOpen( &data->inHandle,
 								portNumber,
 								(DWORD_PTR)&midiInputCallback,
 								(DWORD_PTR)&inputData_,
 								CALLBACK_FUNCTION );
-  if ( result != MMSYSERR_NOERROR ) {
+  if ( result != MMSYSERR_NOERROR ) {*/
 	errorString_ = "MidiInWinMM::openPort: error creating Windows MM MIDI input port.";
 	error( RtMidiError::DRIVER_ERROR, errorString_ );
 	return;
-  }
+  //}
 
   // Allocate and init the sysex buffers.
   for ( int i=0; i<RT_SYSEX_BUFFER_COUNT; ++i ) {
