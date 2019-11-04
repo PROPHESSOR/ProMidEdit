@@ -368,14 +368,26 @@ void MatrixWidget::paintEvent(QPaintEvent* event)
                     double metronomeDiv = 4 / (double)qPow(2, _div);
                     int ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
                     int startTickDiv = ticksPerDiv;
+                    int width = xPosOfMs(msOfTick(ticksPerDiv))-xPosOfMs(0);
                     QPen oldPen = pixpainter->pen();
-                    QPen dashPen = QPen(Qt::lightGray, 1, Qt::DashLine);
-                    pixpainter->setPen(dashPen);
+
+                    int i = 0;
                     while (startTickDiv < measureEvent->ticksPerMeasure()) {
+                        i += 1;
                         int divTick = startTickDiv + measureStartTick;
                         int xDiv = xPosOfMs(msOfTick(divTick));
+
                         currentDivs.append(QPair<int, int>(xDiv, divTick));
+
+                        if (i&1) {
+                            pixpainter->setOpacity(0.3);
+                            pixpainter->setPen(QPen(Qt::PenStyle::NoPen));
+                            pixpainter->drawRect(xDiv-width, timeHeight, width, height()-timeHeight);
+                            pixpainter->setOpacity(1);
+                        }
+                        pixpainter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
                         pixpainter->drawLine(xDiv, timeHeight, xDiv, height());
+
                         startTickDiv += ticksPerDiv;
                         txtToPrint.push_back(xDiv);
                     }
@@ -630,9 +642,11 @@ void MatrixWidget::paintChannel(QPainter* painter, int channel)
 
             event->setX(x);
             event->setY(y);
-            double metronomeDiv = 4 / (double)qPow(2, _div);
+
+            double metronomeDiv = 4 / (double)qPow(2, 3/*_div*/);
             int ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
             width = timeMsOfWidth(msOfTick(ticksPerDiv)/8/12);
+
             event->setWidth(width);
             event->setHeight(height);
 

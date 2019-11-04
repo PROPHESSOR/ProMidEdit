@@ -13,7 +13,7 @@ CONFIG += c++14
 FORMS +=
 RESOURCES += resources.qrc
 message(get arch)
-message($$(OVERRIDE_ARCH))
+#message($$(OVERRIDE_ARCH))
 ARCH_FORCE = $$(OVERRIDE_ARCH)
 contains(ARCH_FORCE, 64){
     DEFINES += __ARCH64__
