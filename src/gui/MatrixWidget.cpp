@@ -228,18 +228,31 @@ void MatrixWidget::paintEvent(QPaintEvent* event) {
         for (int i = startLineY; i <= endLineY; i++) {
             int startLine = yPosOfLine(i);
             QColor c(194, 230, 255);
-            if (i % 2 == 0) {
+            bool isWhiteKey = false;
+            switch ((127-i) % 12) {
+                case 0:
+                case 2:
+                case 4:
+                case 5:
+                case 7:
+                case 9:
+                case 11:
+                    isWhiteKey = true;
+            }
+            if (isWhiteKey) {
                 c = QColor(234, 246, 255);
             }
-
             if (i > 127) {
                 c = QColor(194, 194, 194);
-                if (i % 2 == 1) {
+                if (!isWhiteKey) {
                     c = QColor(234, 246, 255);
                 }
             }
             pixpainter->fillRect(lineNameWidth, startLine, width(),
                                  startLine + lineHeight(), c);
+            if ((127-i) % 12 == 0) {
+                pixpainter->drawLine(lineNameWidth, startLine+lineHeight(), width(), startLine+lineHeight());
+            }
         }
 
         // paint measures and timeline
@@ -319,6 +332,8 @@ void MatrixWidget::paintEvent(QPaintEvent* event) {
         while (tick + currentEvent->ticksPerMeasure() <= startTick) {
             tick += currentEvent->ticksPerMeasure();
         }
+
+        std::vector<int> txtToPrint;
         while (tick < endTick) {
             TimeSignatureEvent* measureEvent = currentTimeSignatureEvents->at(i);
             int xfrom = xPosOfMs(msOfTick(tick));
@@ -340,6 +355,7 @@ void MatrixWidget::paintEvent(QPaintEvent* event) {
             if (tick > startTick) {
                 pixpainter->setPen(Qt::gray);
                 pixpainter->drawLine(xfrom, timeHeight / 2, xfrom, height());
+                txtToPrint.push_back(xfrom);
                 QString text = tr("Measure ") + QString::number(measure - 1);
                 int textlength = QFontMetrics(pixpainter->font()).width(text);
                 if (textlength > xto - xfrom) {
@@ -354,15 +370,28 @@ void MatrixWidget::paintEvent(QPaintEvent* event) {
                     double metronomeDiv = 4 / (double)qPow(2, _div);
                     int ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
                     int startTickDiv = ticksPerDiv;
+                    int width = xPosOfMs(msOfTick(ticksPerDiv))-xPosOfMs(0);
                     QPen oldPen = pixpainter->pen();
-                    QPen dashPen = QPen(Qt::lightGray, 1, Qt::DashLine);
-                    pixpainter->setPen(dashPen);
+
+                    int i = 0;
                     while (startTickDiv < measureEvent->ticksPerMeasure()) {
+                        i += 1;
                         int divTick = startTickDiv + measureStartTick;
                         int xDiv = xPosOfMs(msOfTick(divTick));
+
                         currentDivs.append(QPair<int, int>(xDiv, divTick));
+
+                        if (i&1) {
+                            pixpainter->setOpacity(0.3);
+                            pixpainter->setPen(QPen(Qt::PenStyle::NoPen));
+                            pixpainter->drawRect(xDiv-width, timeHeight, width, height()-timeHeight);
+                            pixpainter->setOpacity(1);
+                        }
+                        pixpainter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
                         pixpainter->drawLine(xDiv, timeHeight, xDiv, height());
+
                         startTickDiv += ticksPerDiv;
+                        txtToPrint.push_back(xDiv);
                     }
                     pixpainter->setPen(oldPen);
                 }
@@ -386,6 +415,45 @@ void MatrixWidget::paintEvent(QPaintEvent* event) {
         pixpainter->setClipping(false);
 
         pixpainter->setPen(Qt::black);
+
+        /*for (const auto &p: txtToPrint) {
+            for (int i = startLineY; i <= endLineY; i++) {
+                int startLine = yPosOfLine(i);
+                QString isWhiteKey = "";
+                QString my_sym;
+                int note_id = 127-i+12;
+                while (note_id >= 72 || note_id < 60) {
+                    if (note_id < 60) {
+                        my_sym = '-' + my_sym;
+                        note_id += 12;
+                    } else {
+                        my_sym = '+' + my_sym;
+                        note_id -= 12;
+                    }
+                }
+                switch (note_id-60) {
+                    case 0: isWhiteKey = "1"; break;
+                    //case 1: isWhiteKey = "1#"; break;
+                    case 2: isWhiteKey = "2"; break;
+                    //case 3: isWhiteKey = "2#"; break;
+
+                    case 4: isWhiteKey = "3"; break;
+                    case 5: isWhiteKey = "4"; break;
+                    //case 5: isWhiteKey = "3"; break;
+                    //case 6: isWhiteKey = "4#"; break;
+
+                    case 7: isWhiteKey = "5"; break;
+                    //case 8: isWhiteKey = "5#"; break;
+                    case 9: isWhiteKey = "6"; break;
+                    //case 10: isWhiteKey = "6#"; break;
+                    case 11: isWhiteKey = "7"; break;
+                }
+                my_sym += isWhiteKey;
+                if (isWhiteKey.length())
+                    pixpainter->drawText(p, startLine + lineHeight() / 2 + 4, my_sym);
+            }
+
+        }*/
 
         delete pixpainter;
     }
@@ -575,6 +643,11 @@ void MatrixWidget::paintChannel(QPainter* painter, int channel) {
 
             event->setX(x);
             event->setY(y);
+
+            double metronomeDiv = 4 / (double)qPow(2, 3/*_div*/);
+            int ticksPerDiv = metronomeDiv * file->ticksPerQuarter();
+            width = timeMsOfWidth(msOfTick(ticksPerDiv)/8/12);
+
             event->setWidth(width);
             event->setHeight(height);
 

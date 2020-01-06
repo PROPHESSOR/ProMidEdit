@@ -121,3 +121,39 @@ QString NoteOnEvent::typeString()
 {
     return "Note On Event";
 }
+
+void NoteOnEvent::draw(QPainter *p, QColor c) {
+    MidiEvent::draw(p, c);
+
+    QString isWhiteKey = "", my_sym = "";
+    int note_id = _note+12;
+    while (note_id >= 72 || note_id < 60) {
+        if (note_id < 60) {
+            my_sym = '-' + my_sym;
+            note_id += 12;
+        } else if (note_id >= 72+24) {
+            my_sym = '*' + my_sym;
+            note_id -= 36;
+        } else {
+            my_sym = '+' + my_sym;
+            note_id -= 12;
+        }
+    }
+    switch (note_id-60) {
+        case 0: isWhiteKey = "1"; break;
+        case 1: isWhiteKey = "1#"; break;
+        case 2: isWhiteKey = "2"; break;
+        case 3: isWhiteKey = "2#"; break;
+        case 4: isWhiteKey = "3"; break;
+        case 5: isWhiteKey = "4"; break;
+        case 6: isWhiteKey = "4#"; break;
+        case 7: isWhiteKey = "5"; break;
+        case 8: isWhiteKey = "5#"; break;
+        case 9: isWhiteKey = "6"; break;
+        case 10: isWhiteKey = "6#"; break;
+        case 11: isWhiteKey = "7"; break;
+    }
+    my_sym += isWhiteKey;
+    p->setPen(Qt::white);
+    p->drawText(x()+1, y()+height()-2, my_sym);
+}

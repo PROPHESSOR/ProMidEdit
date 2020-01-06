@@ -42,6 +42,8 @@ public:
     QByteArray save();
     QByteArray saveOffEvent();
 
+    virtual void draw(QPainter *p, QColor c) override;
+
     QString typeString();
 
 protected:
